@@ -1,0 +1,144 @@
+{% extends "epay/base.html"%}
+{% block content %}
+
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+    p {
+      text-align: center;
+      font-size: 30px;
+      margin-top: 0px;
+      align: center;
+
+    }
+    </style>
+
+
+
+
+    <article class="media content-section">
+      <div class="media-body">
+        <div class="article-metadata">
+          <h2 class="article-title">{{object.itemTitle}}</h2>
+          </div>
+          <p>Listing End Date: {{object.endTime|date:"F d, Y"}}</p>
+          <p> Time Left: <p id="demo"></p></p>
+            </br>
+            <img src="{{object.itemPicture.url}}">
+            </br>
+            <p>Original Starting Price: £{{object.price}}</p>
+          <h2><a class="article-title">{{object.itemDescription}}</h2>
+            {% if object.seller == user %}
+            <div>
+              <div class="alert alert-info" role="alert">
+                <a class=btn btn secondary btn-sm mt-1 mb-1 href="{% url 'item-update' object.id %}">Update Item?</a>
+              </div>
+            <div class="alert alert-danger" role="alert">
+              <a class=btn btn danger btn-sm mt-1 mb-1 href="{% url 'item-delete' object.id %}">Delete Item?</a>
+            </div>
+          </div>
+            {% endif %}
+            <div>
+                <p>Current Bid:{{object.currentBid}} <br>Current Highest Bidder: {{object.winner}}</p>
+            </div>
+
+            {% if user.is_authenticated %}
+              <form class="form-inline">
+                {% csrf_token %}
+              <input class="form-control mr-sm-2" type="search" placeholder="Bid" aria-label="Search", id = "bidbox">
+              <button class="btn btn-outline-success my-2 my-sm-0"  id ="submit">Bid</button>
+            </form>
+          {% endif%}
+        </div>
+    </article>
+
+    <script>
+              $.ajax({
+                headers: { "X-CSRFToken": '{{csrf_token}}'}
+             })
+
+              $("#submit").click(function(e){
+                e.preventDefault()
+                var item = '{{object.id}}'
+                console.log(item)
+                $.ajax({
+                  url:"{% url 'bidView'%}",
+                  method:"POST",
+                  data:{
+                      bid:$("#bidbox").val(),
+                      item: item,
+                      'csrfmiddlewaretoken': $('input[name=csrfmiddlewaretoken]').val()
+                  },
+                  success: function(data){
+                    console.log(data)
+                    document.location.reload()
+                  },
+                })
+              })
+
+
+// Set the date we're counting down to
+
+
+var time = '{{object.endTime}}'
+
+var countDownDate = new Date(time).getTime();
+
+// Update the count down every 1 second
+var x = setInterval(function() {
+
+  // Get today's date and time
+  var now = new Date().getTime();
+
+  // Find the distance between now and the count down date
+  var distance = countDownDate - now;
+
+  // Time calculations for days, hours, minutes and seconds
+  var days = Math.floor(distance / (1000 * 60 * 60 * 24));
+  var hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+  var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+  var seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+
+
+  // Output the result in an element with id="demo"
+  document.getElementById("demo").innerHTML = days + "d " + hours + "h "
+  + minutes + "m " + seconds + "s ";
+
+  // If the count down is over, write some text
+  if (distance < 0) {
+    clearInterval(x);
+    document.getElementById("demo").innerHTML = "EXPIRED";
+  }
+}, 1000);
+
+console.log(document.getElementById("demo").text)
+window.setInterval(poster, 500);
+function poster(){
+      if(document.getElementById("demo").innerHTML===""){
+
+        console.log("entered")
+        $.ajax({
+            url:"{% url 'turntoClosed'%}",
+            method:"POST",
+            data:{
+                item: '{{object.id}}',
+                bool:false,
+                'csrfmiddlewaretoken': $('input[name=csrfmiddlewaretoken]').val(),
+            },
+            success: function(data){
+              console.log(data)
+              document.location.reload()
+            },
+      })
+      }
+
+
+}
+
+
+      console.log(document.getElementById("demo"))
+</script>
+
+
+{% endblock content %}
+<img class="rounded-circle account-img" src="{{ user.profile.pic.url }}">

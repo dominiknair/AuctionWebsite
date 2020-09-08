@@ -1,0 +1,41 @@
+{% extends "epay/base.html"%}
+{% block content %}
+
+        <form class="form-inline">
+          <input class="form-control mr-sm-2" type="search" placeholder="Enter Item Name" aria-label="Search", id = "itemSearch" size="100">
+          <button class="btn btn-outline-success my-2 my-sm-0"  id ="search">Search</button>
+      </form>
+
+
+
+    <div class="container pt-5" id ="List"></div>
+
+
+        <script>
+            $("#search").click(function(e){
+              var str = ""
+              e.preventDefault()
+              $.ajax({
+                url:"{% url 'searchview1'%}",
+                method:"GET",
+                success: function(data){
+                console.log(data)
+                  $("#List").empty()
+                    for(i=0;i<data.Items.length;i++){
+                      if(data.Items[i].itemTitle.toLowerCase().includes($("#itemSearch").val().toLowerCase())){
+                        var itemid = '{% url 'item-detail' 0 %}'.replace('0',data.Items[i].id)
+                        str+=
+                        "<div class='card'>"+
+                          "<div class='card-body'>"+
+                            "<h2><a class='article-title'>"+data.Items[i].itemTitle+"</h2>"+
+                              "<small class='text-muted'>"+"listing end date: " + data.Items[i].endTime + "</small>"+
+                            "</div>"+
+                            "<a class='btn btn-primary' href='"+itemid+"' >View Item</a>"+
+                          "</div>"+"</br>"}}
+                    $("#List").html(str)
+                },
+              })
+
+            })
+          </script>
+{% endblock content %}
